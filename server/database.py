@@ -1,6 +1,6 @@
 import mysql.connector
 import mysql.connector.pooling
-from .leetcode_all_problems import fetch_all_problems
+from leetcode_all_problems import fetch_all_problems
 import os
 from dotenv import load_dotenv
 

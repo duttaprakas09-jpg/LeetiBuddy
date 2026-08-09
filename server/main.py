@@ -3,18 +3,18 @@ from dotenv import load_dotenv
 import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(BASE_DIR, ".env"))
-from .model import CompletedProblem, UpdatedInfo, LoginUserInfo, SignupUserInfo
+from model import CompletedProblem, UpdatedInfo, LoginUserInfo, SignupUserInfo
 import httpx
-from .ai_support import build_prompt, extract_json
+from ai_support import build_prompt, extract_json
 
-from .get_recent_leetcode_solutions import get_leetcode_profile_data
+from get_recent_leetcode_solutions import get_leetcode_profile_data
 import json
 from jose import jwt
 from datetime import timedelta, datetime, timezone
 from passlib.context import CryptContext
 from fastapi.middleware.cors import CORSMiddleware
-from .database import connect_db, fetch_all_problems
-from .database import init_db
+from database import connect_db, fetch_all_problems
+from database import init_db
 
 from contextlib import asynccontextmanager
 
