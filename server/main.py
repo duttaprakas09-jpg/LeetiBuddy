@@ -1,16 +1,30 @@
 from fastapi import FastAPI, HTTPException, Header, Depends
-from model import CompletedProblem, UpdatedInfo, LoginUserInfo, SignupUserInfo
-import httpx
-from ai_support import build_prompt, extract_json
 from dotenv import load_dotenv
-from get_recent_leetcode_solutions import get_leetcode_profile_data
-import json
 import os
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(BASE_DIR, ".env"))
+from .model import CompletedProblem, UpdatedInfo, LoginUserInfo, SignupUserInfo
+import httpx
+from .ai_support import build_prompt, extract_json
+
+from .get_recent_leetcode_solutions import get_leetcode_profile_data
+import json
 from jose import jwt
 from datetime import timedelta, datetime, timezone
 from passlib.context import CryptContext
 from fastapi.middleware.cors import CORSMiddleware
-from database import connect_db, fetch_all_problems
+from .database import connect_db, fetch_all_problems
+from .database import init_db
+
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    yield
+
+app = FastAPI(lifespan=lifespan)
+
 
 crypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 def hash_password(password: str):
@@ -24,6 +38,7 @@ def create_access_token(userinfo: dict, conn):
     cursor = conn.cursor(buffered=True, dictionary=True)
     cursor.execute('SELECT user_id FROM user_info WHERE username=%s', (userinfo['username'], ))
     user_id = cursor.fetchone()
+    cursor.close()
     userinfo = {'user_id': user_id['user_id'], "exp": expire}
     return jwt.encode(userinfo, SECRET_KEY, algorithm=ALGORITHM)
 
@@ -44,7 +59,6 @@ def get_list(user_info, conn):
     return result
 
 
-app = FastAPI()
 
 
 
@@ -63,6 +77,8 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent"
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
+
+
 
 
 @app.get("/health/")
